@@ -1,0 +1,144 @@
+export type RevenueTrend = "growing" | "flat" | "declining";
+
+export type DebtLoad = "low" | "moderate" | "high";
+
+export type CashFlowConsistency = "strong" | "moderate" | "weak";
+
+export interface FixItem {
+  priority: string | number;
+  action: string;
+  impact: string;
+}
+
+/** Parsed Claude output saved to Supabase and returned from /api/analyze */
+export interface LoanAnalysis {
+  loan_readiness_score: number;
+  dscr: number | null;
+  revenue_trend: RevenueTrend;
+  debt_load: DebtLoad;
+  cash_flow_consistency: CashFlowConsistency;
+  red_flags: string[];
+  fix_list: FixItem[];
+  loan_types_qualified: string[];
+  summary: string;
+}
+
+const SYSTEM_PROMPT =
+  "You are an expert SBA loan underwriter. Analyze this financial document and return a JSON object with these exact fields: loan_readiness_score (0-100 integer), dscr (number or null), revenue_trend (growing/flat/declining), debt_load (low/moderate/high), cash_flow_consistency (strong/moderate/weak), red_flags (array of strings), fix_list (array of objects with priority, action, impact fields), loan_types_qualified (array of loan types they qualify for), summary (2-3 sentence plain English summary). Base everything on real SBA underwriting criteria.";
+
+export function getLoanAnalysisSystemPrompt(): string {
+  return SYSTEM_PROMPT;
+}
+
+export function extractJsonFromAssistantText(text: string): string {
+  let t = text.trim();
+  const fence = /^```(?:json)?\s*\n?([\s\S]*?)\n?```$/im.exec(t);
+  if (fence?.[1]) {
+    t = fence[1].trim();
+  }
+  return t;
+}
+
+function asStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter((x): x is string => typeof x === "string");
+}
+
+function asFixList(v: unknown): FixItem[] {
+  if (!Array.isArray(v)) return [];
+  const out: FixItem[] = [];
+  for (const item of v) {
+    if (!item || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    const priority = o.priority;
+    const action = o.action;
+    const impact = o.impact;
+    out.push({
+      priority:
+        typeof priority === "string" || typeof priority === "number"
+          ? priority
+          : "",
+      action: typeof action === "string" ? action : "",
+      impact: typeof impact === "string" ? impact : "",
+    });
+  }
+  return out;
+}
+
+function clampScore(n: number): number {
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(100, Math.max(0, Math.round(n)));
+}
+
+function priorityRank(p: string | number): number {
+  if (typeof p === "number" && Number.isFinite(p)) return p;
+  const s = String(p).toLowerCase();
+  if (s.includes("high") || s === "1" || s === "p1") return 1;
+  if (
+    s.includes("medium") ||
+    s.includes("moderate") ||
+    s === "2" ||
+    s === "p2"
+  )
+    return 2;
+  if (s.includes("low") || s === "3" || s === "p3") return 3;
+  return 50;
+}
+
+export function normalizeLoanAnalysis(raw: unknown): LoanAnalysis {
+  const base =
+    raw && typeof raw === "object"
+      ? (raw as Record<string, unknown>)
+      : {};
+
+  const scoreRaw = base.loan_readiness_score;
+  const score =
+    typeof scoreRaw === "number"
+      ? clampScore(scoreRaw)
+      : typeof scoreRaw === "string"
+        ? clampScore(Number.parseFloat(scoreRaw))
+        : 0;
+
+  let dscr: number | null = null;
+  if (base.dscr === null || base.dscr === undefined) {
+    dscr = null;
+  } else if (typeof base.dscr === "number" && Number.isFinite(base.dscr)) {
+    dscr = base.dscr;
+  } else if (typeof base.dscr === "string" && base.dscr.trim() !== "") {
+    const n = Number.parseFloat(base.dscr);
+    dscr = Number.isFinite(n) ? n : null;
+  }
+
+  const rt = base.revenue_trend;
+  const revenue_trend: RevenueTrend =
+    rt === "growing" || rt === "flat" || rt === "declining" ? rt : "flat";
+
+  const dl = base.debt_load;
+  const debt_load: DebtLoad =
+    dl === "low" || dl === "moderate" || dl === "high" ? dl : "moderate";
+
+  const cf = base.cash_flow_consistency;
+  const cash_flow_consistency: CashFlowConsistency =
+    cf === "strong" || cf === "moderate" || cf === "weak" ? cf : "moderate";
+
+  const summary =
+    typeof base.summary === "string" && base.summary.trim()
+      ? base.summary.trim()
+      : "Analysis completed; summary unavailable.";
+
+  const fix_list = asFixList(base.fix_list).sort(
+    (a, b) => priorityRank(a.priority) - priorityRank(b.priority),
+  );
+
+  return {
+    loan_readiness_score: score,
+    dscr,
+    revenue_trend,
+    debt_load,
+    cash_flow_consistency,
+    red_flags: asStringArray(base.red_flags),
+    fix_list,
+    loan_types_qualified: asStringArray(base.loan_types_qualified),
+    summary,
+  };
+}
