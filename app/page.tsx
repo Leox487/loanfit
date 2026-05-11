@@ -1,6 +1,39 @@
+"use client";
+
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    router.replace("/dashboard");
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded) {
+    return (
+      <main className="landing">
+        <div className="landing-inner">
+          <p className="landing-kicker">Loading…</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (isSignedIn) {
+    return (
+      <main className="landing">
+        <div className="landing-inner">
+          <p className="page-lede">Redirecting to your dashboard…</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="landing">
       <div className="landing-inner">
