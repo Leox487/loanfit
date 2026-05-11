@@ -12,7 +12,7 @@ import { createSupabaseServiceRoleClient } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-sonnet-4-6";
 const MAX_PDF_BYTES = 15 * 1024 * 1024;
 
 const ALLOWED_TYPES = [
