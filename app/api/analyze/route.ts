@@ -149,7 +149,16 @@ export async function POST(req: Request) {
     .insert({
       user_id: userId,
       document_type: documentType,
-      analysis,
+      raw_text: textBlock.text,
+      loan_readiness_score: analysis.loan_readiness_score,
+      dscr: analysis.dscr,
+      revenue_trend: analysis.revenue_trend,
+      debt_load: analysis.debt_load,
+      cash_flow_consistency: analysis.cash_flow_consistency,
+      red_flags: analysis.red_flags,
+      fix_list: analysis.fix_list,
+      loan_types_qualified: analysis.loan_types_qualified,
+      full_report: JSON.stringify(analysis),
     })
     .select("id")
     .single();
