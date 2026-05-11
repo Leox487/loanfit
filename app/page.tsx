@@ -12,7 +12,11 @@ export default function Home() {
           Upload your financials. Get your loan readiness score. Fix what&apos;s
           broken.
         </p>
-        <Link href="/sign-up" className="btn btn-primary landing-cta">
+        <Link
+          href="/sign-up"
+          prefetch={false}
+          className="btn btn-primary landing-cta"
+        >
           Get started free
         </Link>
       </div>
