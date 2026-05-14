@@ -94,7 +94,7 @@ export default async function ResultsPage({
 
   let analysis: LoanAnalysis;
   try {
-    analysis = normalizeLoanAnalysis(JSON.parse(data.full_report as string));
+    analysis = normalizeLoanAnalysis(data.full_report);
   } catch {
     notFound();
   }

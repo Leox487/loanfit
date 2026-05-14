@@ -158,7 +158,7 @@ export async function POST(req: Request) {
       red_flags: analysis.red_flags,
       fix_list: analysis.fix_list,
       loan_types_qualified: analysis.loan_types_qualified,
-      full_report: analysis.summary,
+      full_report: analysis,
     })
     .select("id")
     .single();
