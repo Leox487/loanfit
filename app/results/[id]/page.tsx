@@ -85,14 +85,19 @@ export default async function ResultsPage({
 
   const { data, error } = await supabase
     .from("analyses")
-    .select("analysis, document_type, created_at")
+    .select("document_type, created_at, full_report")
     .eq("id", id)
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (error || !data?.analysis) notFound();
+  if (error || !data?.full_report) notFound();
 
-  const analysis: LoanAnalysis = normalizeLoanAnalysis(data.analysis);
+  let analysis: LoanAnalysis;
+  try {
+    analysis = normalizeLoanAnalysis(JSON.parse(data.full_report as string));
+  } catch {
+    notFound();
+  }
 
   const scoreTone = toneForScore(analysis.loan_readiness_score);
 

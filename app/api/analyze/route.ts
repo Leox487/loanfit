@@ -164,7 +164,7 @@ export async function POST(req: Request) {
     .single();
 
   if (insertError || !row?.id) {
-    console.error(insertError);
+    console.error("Supabase insert error:", JSON.stringify(insertError));
     return NextResponse.json(
       { error: "Failed to save analysis" },
       { status: 500 },
