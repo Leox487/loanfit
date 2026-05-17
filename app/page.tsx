@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 
 export default async function Home() {
   const { userId } = await auth();
-  if (userId) redirect("/dashboard");
+  const isSignedIn = Boolean(userId);
 
   return (
     <main className="landing">
@@ -18,12 +17,25 @@ export default async function Home() {
           readiness score, red flags, and a prioritized fix list powered by AI.
         </p>
         <div className="landing-actions">
-          <Link href="/sign-up" className="btn btn-primary landing-cta">
-            Get your score free
-          </Link>
-          <Link href="/sign-in" className="btn btn-ghost">
-            Sign in
-          </Link>
+          {isSignedIn ? (
+            <>
+              <Link href="/dashboard" className="btn btn-primary landing-cta">
+                Go to dashboard
+              </Link>
+              <Link href="/upload" className="btn btn-ghost">
+                Upload a document
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/sign-up" className="btn btn-primary landing-cta">
+                Get your score free
+              </Link>
+              <Link href="/sign-in" className="btn btn-ghost">
+                Sign in
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </main>
