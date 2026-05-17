@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import {
   type DebtLoad,
@@ -53,6 +53,15 @@ export default async function DashboardPage() {
   } catch {
     notFound();
   }
+
+  const { data: business, error: businessError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("clerk_user_id", userId)
+    .maybeSingle();
+
+  if (businessError) notFound();
+  if (!business) redirect("/onboarding");
 
   const { data, error } = await supabase
     .from("analyses")

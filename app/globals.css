@@ -748,6 +748,77 @@ body {
   margin-top: 0.25rem;
 }
 
+.onboarding-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.onboarding-kicker {
+  margin: 0 0 1rem;
+  width: 100%;
+  max-width: 560px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+.onboarding-card {
+  width: 100%;
+  max-width: 560px;
+  padding: 2rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.onboarding-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.onboarding-lede {
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.onboarding-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.onboarding-input {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.onboarding-input:focus {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
+}
+
+.onboarding-submit {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
 .results-page {
   flex: 1;
   padding: 2.5rem 1.5rem 4rem;
