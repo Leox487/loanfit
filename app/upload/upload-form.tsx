@@ -1,52 +1,135 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-const DOC_TYPES = [
-  "Bank Statement",
-  "Profit & Loss",
-  "Tax Return",
-] as const;
+type SlotKey = "bankStatement" | "profitLoss" | "taxReturn";
+
+const SLOTS: {
+  key: SlotKey;
+  label: string;
+  required: boolean;
+}[] = [
+  { key: "bankStatement", label: "Bank Statement", required: true },
+  { key: "profitLoss", label: "Profit & Loss", required: false },
+  { key: "taxReturn", label: "Tax Return", required: false },
+];
+
+type SlotFiles = Record<SlotKey, File | null>;
+
+const EMPTY_SLOTS: SlotFiles = {
+  bankStatement: null,
+  profitLoss: null,
+  taxReturn: null,
+};
+
+function UploadSlot({
+  slotKey,
+  label,
+  required,
+  file,
+  onPick,
+  onClear,
+  onInvalid,
+}: {
+  slotKey: SlotKey;
+  label: string;
+  required: boolean;
+  file: File | null;
+  onPick: (f: File) => void;
+  onClear: () => void;
+  onInvalid: (message: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = `upload-${slotKey}`;
+
+  const handleChange = (f: File | undefined | null) => {
+    if (!f) return;
+    if (f.type !== "application/pdf") {
+      onInvalid("Please choose a PDF file.");
+      return;
+    }
+    onPick(f);
+  };
+
+  return (
+    <div className={`upload-slot ${file ? "upload-slot-filled" : ""}`}>
+      <div className="upload-slot-header">
+        <label className="upload-slot-label" htmlFor={inputId}>
+          {label}
+          {required ? (
+            <span className="upload-slot-required"> (required)</span>
+          ) : (
+            <span className="upload-slot-optional"> (optional)</span>
+          )}
+        </label>
+        {file ? (
+          <span className="upload-slot-check" aria-hidden>
+            ✓
+          </span>
+        ) : null}
+      </div>
+
+      <input
+        ref={inputRef}
+        id={inputId}
+        type="file"
+        accept="application/pdf"
+        className="upload-slot-input"
+        onChange={(e) => handleChange(e.target.files?.[0])}
+      />
+
+      {file ? (
+        <div className="upload-slot-body">
+          <span className="upload-slot-filename">{file.name}</span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-small"
+            onClick={() => {
+              onClear();
+              if (inputRef.current) inputRef.current.value = "";
+            }}
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        <div className="upload-slot-body">
+          <p className="upload-slot-hint">PDF only · max 15MB</p>
+          <button
+            type="button"
+            className="btn btn-ghost btn-small"
+            onClick={() => inputRef.current?.click()}
+          >
+            Choose file
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function UploadForm() {
   const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] =
-    useState<(typeof DOC_TYPES)[number]>("Bank Statement");
-  const [dragActive, setDragActive] = useState(false);
+  const [files, setFiles] = useState<SlotFiles>(EMPTY_SLOTS);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const pickFile = useCallback((f: File | undefined | null) => {
-    setError(null);
-    if (!f) return;
-    if (f.type !== "application/pdf") {
-      setError("Please choose a PDF file.");
-      setFile(null);
-      return;
-    }
-    setFile(f);
-  }, []);
-
-  const onDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setDragActive(false);
-      pickFile(e.dataTransfer.files?.[0]);
-    },
-    [pickFile],
-  );
+  const hasBankStatement = files.bankStatement !== null;
+  const filledCount = Object.values(files).filter(Boolean).length;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || submitting) return;
+    if (!hasBankStatement || submitting) return;
+
     setSubmitting(true);
     setError(null);
+
     const body = new FormData();
-    body.set("file", file);
-    body.set("documentType", documentType);
+    if (files.bankStatement) body.set("bankStatement", files.bankStatement);
+    if (files.profitLoss) body.set("profitLoss", files.profitLoss);
+    if (files.taxReturn) body.set("taxReturn", files.taxReturn);
+
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -71,82 +154,41 @@ export function UploadForm() {
 
   return (
     <form className="upload-form" onSubmit={onSubmit}>
-      <label className="field-label" htmlFor="document-type">
-        Document type
-      </label>
-      <select
-        id="document-type"
-        className="select-field"
-        value={documentType}
-        onChange={(e) =>
-          setDocumentType(e.target.value as (typeof DOC_TYPES)[number])
-        }
-      >
-        {DOC_TYPES.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
+      <div className="upload-slots">
+        {SLOTS.map((slot) => (
+          <UploadSlot
+            key={slot.key}
+            slotKey={slot.key}
+            label={slot.label}
+            required={slot.required}
+            file={files[slot.key]}
+            onPick={(f) => {
+              setError(null);
+              setFiles((prev) => ({ ...prev, [slot.key]: f }));
+            }}
+            onClear={() => {
+              setFiles((prev) => ({ ...prev, [slot.key]: null }));
+            }}
+            onInvalid={setError}
+          />
         ))}
-      </select>
-
-      <p className="field-label">PDF file</p>
-      <div
-        className={`drop-zone ${dragActive ? "drop-zone-active" : ""} ${file ? "drop-zone-filled" : ""}`}
-        onDragEnter={(e) => {
-          e.preventDefault();
-          setDragActive(true);
-        }}
-        onDragLeave={() => setDragActive(false)}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={onDrop}
-        role="presentation"
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="application/pdf"
-          className="drop-zone-input"
-          onChange={(e) => pickFile(e.target.files?.[0])}
-        />
-        {file ? (
-          <div className="drop-zone-body">
-            <span className="drop-zone-filename">{file.name}</span>
-            <button
-              type="button"
-              className="btn btn-ghost btn-small"
-              onClick={() => {
-                setFile(null);
-                if (inputRef.current) inputRef.current.value = "";
-              }}
-            >
-              Remove
-            </button>
-          </div>
-        ) : (
-          <div className="drop-zone-body">
-            <p className="drop-zone-title">Drop your PDF here</p>
-            <p className="drop-zone-hint">
-              Bank statement, P&amp;L, or tax return · max 15MB
-            </p>
-            <button
-              type="button"
-              className="btn btn-ghost btn-small"
-              onClick={() => inputRef.current?.click()}
-            >
-              Browse files
-            </button>
-          </div>
-        )}
       </div>
+
+      <p className="upload-multi-note">
+        Upload more documents for a more accurate analysis. SBA lenders
+        cross-reference all three.
+      </p>
 
       {error ? <p className="form-error">{error}</p> : null}
 
       <button
         type="submit"
         className="btn btn-primary upload-submit"
-        disabled={!file || submitting}
+        disabled={!hasBankStatement || submitting}
       >
-        {submitting ? "Analyzing…" : "Analyze with AI"}
+        {submitting
+          ? "Analyzing…"
+          : `Analyze all documents${filledCount > 0 ? ` (${filledCount})` : ""}`}
       </button>
     </form>
   );

@@ -643,11 +643,108 @@ body {
 
 .upload-page-inner {
   width: 100%;
-  max-width: 28rem;
+  max-width: 36rem;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.upload-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-slot {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  background: var(--bg);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.upload-slot-filled {
+  border-style: solid;
+  border-color: var(--tone-good-border);
+  background: var(--tone-good-bg);
+}
+
+.upload-slot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.upload-slot-label {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.upload-slot-required {
+  font-weight: 500;
+  color: var(--tone-bad-text);
+}
+
+.upload-slot-optional {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.upload-slot-check {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--tone-good-text);
+  background: var(--bg);
+  border: 1px solid var(--tone-good-border);
+  border-radius: 999px;
+}
+
+.upload-slot-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.upload-slot-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.upload-slot-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.upload-slot-filename {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.upload-multi-note {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .upload-form {

@@ -15,14 +15,43 @@ export const runtime = "nodejs";
 const MODEL = "claude-sonnet-4-6";
 const MAX_PDF_BYTES = 15 * 1024 * 1024;
 
-const ALLOWED_TYPES = [
-  "Bank Statement",
-  "Profit & Loss",
-  "Tax Return",
+const DOCUMENT_SLOTS = [
+  { formKey: "bankStatement", label: "Bank Statement" },
+  { formKey: "profitLoss", label: "Profit & Loss" },
+  { formKey: "taxReturn", label: "Tax Return" },
 ] as const;
 
-function isAllowedDocType(v: string): v is (typeof ALLOWED_TYPES)[number] {
-  return (ALLOWED_TYPES as readonly string[]).includes(v);
+type UploadedDocument = {
+  label: string;
+  fileName: string;
+  base64: string;
+};
+
+async function readPdfFromForm(
+  form: FormData,
+  formKey: string,
+): Promise<UploadedDocument | null> {
+  const entry = form.get(formKey);
+  if (entry === null || entry === undefined) return null;
+  if (!(entry instanceof File) || entry.size === 0) return null;
+
+  if (entry.type !== "application/pdf") {
+    throw new Error(`INVALID_PDF:${formKey}`);
+  }
+
+  const buf = Buffer.from(await entry.arrayBuffer());
+  if (buf.byteLength > MAX_PDF_BYTES) {
+    throw new Error(`TOO_LARGE:${formKey}`);
+  }
+
+  const label =
+    DOCUMENT_SLOTS.find((s) => s.formKey === formKey)?.label ?? formKey;
+
+  return {
+    label,
+    fileName: entry.name || `${formKey}.pdf`,
+    base64: buf.toString("base64"),
+  };
 }
 
 export async function POST(req: Request) {
@@ -38,31 +67,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
   }
 
-  const file = form.get("file");
-  const documentType = form.get("documentType");
+  const documents: UploadedDocument[] = [];
 
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Missing PDF file" }, { status: 400 });
+  try {
+    for (const slot of DOCUMENT_SLOTS) {
+      const doc = await readPdfFromForm(form, slot.formKey);
+      if (doc) documents.push(doc);
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.startsWith("INVALID_PDF:")) {
+      return NextResponse.json(
+        { error: "Only PDF uploads are supported" },
+        { status: 400 },
+      );
+    }
+    if (msg.startsWith("TOO_LARGE:")) {
+      return NextResponse.json(
+        { error: "Each PDF must be 15MB or smaller" },
+        { status: 400 },
+      );
+    }
+    throw e;
   }
 
-  if (typeof documentType !== "string" || !isAllowedDocType(documentType)) {
-    return NextResponse.json({ error: "Invalid document type" }, { status: 400 });
-  }
-
-  if (file.type !== "application/pdf") {
+  if (documents.length === 0) {
     return NextResponse.json(
-      { error: "Only PDF uploads are supported" },
-      { status: 400 },
-    );
-  }
-
-  const buf = Buffer.from(await file.arrayBuffer());
-  if (buf.byteLength === 0) {
-    return NextResponse.json({ error: "Empty file" }, { status: 400 });
-  }
-  if (buf.byteLength > MAX_PDF_BYTES) {
-    return NextResponse.json(
-      { error: "PDF must be 15MB or smaller" },
+      { error: "Upload at least one PDF document" },
       { status: 400 },
     );
   }
@@ -76,7 +107,31 @@ export async function POST(req: Request) {
   }
 
   const anthropic = new Anthropic({ apiKey });
-  const base64 = buf.toString("base64");
+
+  const content: Anthropic.Messages.MessageCreateParams["messages"][0]["content"] =
+    [];
+
+  for (const doc of documents) {
+    content.push({
+      type: "text",
+      text: `--- Document type: ${doc.label} (${doc.fileName}) ---`,
+    });
+    content.push({
+      type: "document",
+      source: {
+        type: "base64",
+        media_type: "application/pdf",
+        data: doc.base64,
+      },
+      title: `${doc.label} — ${doc.fileName}`,
+    });
+  }
+
+  const docList = documents.map((d) => d.label).join(", ");
+  content.push({
+    type: "text",
+    text: `You have received ${documents.length} document(s): ${docList}. Cross-reference all documents where possible — especially revenue in bank statements vs. P&L vs. tax returns, and flag any discrepancies as red flags. Respond with ONLY valid JSON matching the schema from your instructions — no markdown, no commentary.`,
+  });
 
   let message;
   try {
@@ -84,26 +139,7 @@ export async function POST(req: Request) {
       model: MODEL,
       max_tokens: 8192,
       system: getLoanAnalysisSystemPrompt(),
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "document",
-              source: {
-                type: "base64",
-                media_type: "application/pdf",
-                data: base64,
-              },
-              title: file.name || "upload.pdf",
-            },
-            {
-              type: "text",
-              text: `The borrower labeled this document as: "${documentType}". Respond with ONLY valid JSON matching the schema from your instructions — no markdown, no commentary.`,
-            },
-          ],
-        },
-      ],
+      messages: [{ role: "user", content }],
     });
   } catch (e) {
     console.error(e);
@@ -133,6 +169,7 @@ export async function POST(req: Request) {
   }
 
   const analysis: LoanAnalysis = normalizeLoanAnalysis(parsed);
+  const documentType = documents.map((d) => d.label).join(", ");
 
   let supabase;
   try {

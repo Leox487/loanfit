@@ -6,8 +6,8 @@ export default function UploadPage() {
       <div className="upload-page-inner">
         <h1 className="page-title">Upload financials</h1>
         <p className="page-lede">
-          Add a PDF (bank statement, profit &amp; loss, or tax return). We&apos;ll
-          score loan readiness against typical SBA underwriting criteria.
+          Upload up to three PDFs — bank statement, profit &amp; loss, and tax
+          return — for a cross-referenced SBA-style loan readiness analysis.
         </p>
         <UploadForm />
       </div>
