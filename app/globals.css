@@ -520,3 +520,121 @@ body {
   gap: 0.65rem;
   padding-top: 0.5rem;
 }
+
+.dashboard-inner {
+  max-width: 56rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.dashboard-card:hover {
+  background: var(--hover-bg);
+  border-color: #cccccc;
+}
+
+.dashboard-card-score {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.dashboard-card-score-good {
+  color: var(--tone-good-text);
+}
+
+.dashboard-card-score-warn {
+  color: var(--tone-warn-text);
+}
+
+.dashboard-card-score-bad {
+  color: var(--tone-bad-text);
+}
+
+.dashboard-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.dashboard-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid;
+  text-transform: capitalize;
+}
+
+.dashboard-badge-good {
+  background: var(--tone-good-bg);
+  border-color: var(--tone-good-border);
+  color: var(--tone-good-text);
+}
+
+.dashboard-badge-warn {
+  background: var(--tone-warn-bg);
+  border-color: var(--tone-warn-border);
+  color: var(--tone-warn-text);
+}
+
+.dashboard-badge-bad {
+  background: var(--tone-bad-bg);
+  border-color: var(--tone-bad-border);
+  color: var(--tone-bad-text);
+}
+
+.dashboard-card-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+.dashboard-card:hover .dashboard-card-link {
+  color: var(--fg);
+}
