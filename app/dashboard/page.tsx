@@ -54,13 +54,12 @@ export default async function DashboardPage() {
     notFound();
   }
 
-  const { data: business, error: businessError } = await supabase
+  const { data: business } = await supabase
     .from("businesses")
     .select("id")
     .eq("clerk_user_id", userId)
     .maybeSingle();
 
-  if (businessError) notFound();
   if (!business) redirect("/onboarding");
 
   const { data, error } = await supabase
