@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { SiteNav } from "./components/site-nav";
+import { Navbar } from "./components/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="site-shell">
         <ClerkProvider>
-          <SiteNav />
+          <Navbar />
           <div className="site-main">{children}</div>
         </ClerkProvider>
       </body>
