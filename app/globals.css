@@ -638,3 +638,48 @@ body {
 .dashboard-card:hover .dashboard-card-link {
   color: var(--fg);
 }
+
+.whatif-simulator {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.whatif-lede {
+  margin-top: -0.25rem;
+}
+
+.whatif-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.whatif-slider-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.whatif-slider-label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.whatif-slider {
+  width: 100%;
+  accent-color: var(--fg);
+  cursor: pointer;
+}
+
+.whatif-outcome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.whatif-delta {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}

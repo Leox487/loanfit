@@ -9,6 +9,7 @@ import {
   type RevenueTrend,
   normalizeLoanAnalysis,
 } from "@/lib/analysis-types";
+import { WhatIfSimulator } from "@/app/components/WhatIfSimulator";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase";
 
 type Tone = "good" | "warn" | "bad" | "neutral";
@@ -189,6 +190,13 @@ export default async function ResultsPage({
             </ul>
           )}
         </section>
+
+        <WhatIfSimulator
+          baseScore={analysis.loan_readiness_score}
+          baseDscr={analysis.dscr}
+          baseDebtLoad={analysis.debt_load}
+          baseRevenueTrend={analysis.revenue_trend}
+        />
 
         <div className="results-actions">
           <Link href="/upload" className="btn btn-primary">
