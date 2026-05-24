@@ -8,11 +8,11 @@ import {
   normalizeLoanAnalysis,
   type LoanAnalysis,
 } from "@/lib/analysis-types";
-import { createSupabaseServiceRoleClient } from "@/lib/supabase";
+import { createAnalysis } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-const MODEL = "claude-sonnet-4-6";
+const MODEL = "claude-sonnet-4-20250514";
 const MAX_PDF_BYTES = 15 * 1024 * 1024;
 
 const DOCUMENT_SLOTS = [
@@ -171,19 +171,9 @@ export async function POST(req: Request) {
   const analysis: LoanAnalysis = normalizeLoanAnalysis(parsed);
   const documentType = documents.map((d) => d.label).join(", ");
 
-  let supabase;
+  let saved: { id: string };
   try {
-    supabase = createSupabaseServiceRoleClient();
-  } catch {
-    return NextResponse.json(
-      { error: "Server missing Supabase configuration" },
-      { status: 500 },
-    );
-  }
-
-  const { data: row, error: insertError } = await supabase
-    .from("analyses")
-    .insert({
+    saved = await createAnalysis({
       user_id: userId,
       document_type: documentType,
       raw_text: textBlock.text,
@@ -195,18 +185,20 @@ export async function POST(req: Request) {
       red_flags: analysis.red_flags,
       fix_list: analysis.fix_list,
       loan_types_qualified: analysis.loan_types_qualified,
-      full_report: analysis,
-    })
-    .select("id")
-    .single();
-
-  if (insertError || !row?.id) {
-    console.error("Supabase insert error:", JSON.stringify(insertError));
+      full_report: {
+        ...analysis,
+        score_breakdown: analysis.score_breakdown,
+        dscr_calculation: analysis.dscr_calculation,
+        document_assessment: analysis.document_assessment,
+      },
+    });
+  } catch (e) {
+    console.error("Supabase insert error:", e);
     return NextResponse.json(
       { error: "Failed to save analysis" },
       { status: 500 },
     );
   }
 
-  return NextResponse.json({ id: row.id as string, ...analysis });
+  return NextResponse.json({ id: saved.id, ...analysis });
 }

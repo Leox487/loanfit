@@ -1,13 +1,12 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { createSupabaseServiceRoleClient } from "@/lib/supabase";
+import { createBusiness, getBusinessByClerkId } from "@/lib/db";
 
 const BUSINESS_TYPES = [
-  "Sole Proprietor",
   "LLC",
-  "S-Corp",
-  "C-Corp",
+  "Sole Proprietor",
+  "Corporation",
   "Partnership",
 ] as const;
 
@@ -112,38 +111,23 @@ export async function POST(req: Request) {
     );
   }
 
-  let supabase;
   try {
-    supabase = createSupabaseServiceRoleClient();
-  } catch {
-    return NextResponse.json(
-      { error: "Server missing Supabase configuration" },
-      { status: 500 },
-    );
-  }
+    const existing = await getBusinessByClerkId(userId);
+    if (existing) {
+      return NextResponse.json({ success: true });
+    }
 
-  const { data: existing } = await supabase
-    .from("businesses")
-    .select("id")
-    .eq("clerk_user_id", userId)
-    .maybeSingle();
-
-  if (existing) {
-    return NextResponse.json({ success: true });
-  }
-
-  const { error: insertError } = await supabase.from("businesses").insert({
-    clerk_user_id: userId,
-    name,
-    email,
-    business_type: businessType,
-    industry,
-    years_in_business: years,
-    annual_revenue: annualRevenue,
-  });
-
-  if (insertError) {
-    console.error("Onboarding insert error:", JSON.stringify(insertError));
+    await createBusiness({
+      clerk_user_id: userId,
+      name,
+      email,
+      business_type: businessType,
+      industry,
+      years_in_business: years,
+      annual_revenue: annualRevenue,
+    });
+  } catch (e) {
+    console.error("Onboarding insert error:", e);
     return NextResponse.json(
       { error: "Failed to save business profile" },
       { status: 500 },

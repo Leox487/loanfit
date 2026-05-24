@@ -2,30 +2,20 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { OnboardingForm } from "@/app/components/OnboardingForm";
-import { createSupabaseServiceRoleClient } from "@/lib/supabase";
+import { getBusinessByClerkId } from "@/lib/db";
 
 export default async function OnboardingPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  let supabase;
+  let business;
   try {
-    supabase = createSupabaseServiceRoleClient();
+    business = await getBusinessByClerkId(userId);
   } catch {
     redirect("/sign-in");
   }
 
-  const { data: business, error } = await supabase
-    .from("businesses")
-    .select("id")
-    .eq("clerk_user_id", userId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error("Failed to check onboarding status");
-  }
-
-  if (business) redirect("/dashboard");
+  if (business) redirect("/upload");
 
   return (
     <main className="onboarding-page">

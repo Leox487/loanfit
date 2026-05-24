@@ -2,22 +2,9 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 
-import {
-  type DebtLoad,
-  type RevenueTrend,
-} from "@/lib/analysis-types";
-import { createSupabaseServiceRoleClient } from "@/lib/supabase";
+import { getAnalysesByBusinessId, getBusinessByClerkId } from "@/lib/db";
 
 type Tone = "good" | "warn" | "bad";
-
-type AnalysisRow = {
-  id: string;
-  document_type: string;
-  created_at: string;
-  loan_readiness_score: number;
-  revenue_trend: RevenueTrend;
-  debt_load: DebtLoad;
-};
 
 function toneForScore(score: number): Tone {
   if (score >= 70) return "good";
@@ -25,54 +12,33 @@ function toneForScore(score: number): Tone {
   return "bad";
 }
 
-function toneForRevenue(t: RevenueTrend): Tone {
-  if (t === "growing") return "good";
-  if (t === "flat") return "warn";
-  return "bad";
-}
-
-function toneForDebt(d: DebtLoad): Tone {
-  if (d === "low") return "good";
-  if (d === "moderate") return "warn";
-  return "bad";
-}
-
-function DashboardBadge({ label, tone }: { label: string; tone: Tone }) {
-  return (
-    <span className={`dashboard-badge dashboard-badge-${tone}`}>{label}</span>
-  );
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) notFound();
 
-  let supabase;
+  let business;
   try {
-    supabase = createSupabaseServiceRoleClient();
+    business = await getBusinessByClerkId(userId);
   } catch {
     notFound();
   }
 
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("id")
-    .eq("clerk_user_id", userId)
-    .maybeSingle();
-
   if (!business) redirect("/onboarding");
 
-  const { data, error } = await supabase
-    .from("analyses")
-    .select(
-      "id, document_type, created_at, loan_readiness_score, revenue_trend, debt_load",
-    )
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
-
-  if (error) notFound();
-
-  const analyses = (data ?? []) as AnalysisRow[];
+  let analyses;
+  try {
+    analyses = await getAnalysesByBusinessId(business.id);
+  } catch {
+    notFound();
+  }
 
   return (
     <main className="results-page">
@@ -91,47 +57,46 @@ export default async function DashboardPage() {
 
         {analyses.length === 0 ? (
           <div className="dashboard-empty">
-            <p className="results-muted">No analyses yet</p>
+            <p className="results-muted">No analyses yet.</p>
             <Link href="/upload" className="btn btn-primary">
               Upload a document
             </Link>
           </div>
         ) : (
-          <div className="dashboard-grid">
-            {analyses.map((row) => {
-              const scoreTone = toneForScore(row.loan_readiness_score);
-              const revenueTone = toneForRevenue(row.revenue_trend);
-              const debtTone = toneForDebt(row.debt_load);
-
-              return (
-                <Link
-                  key={row.id}
-                  href={`/results/${row.id}`}
-                  className="dashboard-card"
-                >
-                  <div
-                    className={`dashboard-card-score dashboard-card-score-${scoreTone}`}
-                  >
-                    {row.loan_readiness_score}
-                  </div>
-                  <p className="results-meta">
-                    {row.document_type}
-                    {` · ${new Date(row.created_at).toLocaleString()}`}
-                  </p>
-                  <div className="dashboard-card-badges">
-                    <DashboardBadge
-                      label={`Revenue: ${row.revenue_trend}`}
-                      tone={revenueTone}
-                    />
-                    <DashboardBadge
-                      label={`Debt: ${row.debt_load}`}
-                      tone={debtTone}
-                    />
-                  </div>
-                  <span className="dashboard-card-link">View results →</span>
-                </Link>
-              );
-            })}
+          <div className="dashboard-table-wrap">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Document type</th>
+                  <th scope="col">Score</th>
+                  <th scope="col">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {analyses.map((row) => {
+                  const scoreTone = toneForScore(row.loan_readiness_score);
+                  return (
+                    <tr key={row.id}>
+                      <td>{formatDate(row.created_at)}</td>
+                      <td>{row.document_type}</td>
+                      <td>
+                        <span
+                          className={`dashboard-score dashboard-score-${scoreTone}`}
+                        >
+                          {row.loan_readiness_score}
+                        </span>
+                      </td>
+                      <td className="dashboard-table-action">
+                        <Link href={`/results/${row.id}`}>View report</Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

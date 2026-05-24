@@ -50,7 +50,7 @@ export function LandingActions({
             : "landing-btn landing-btn-primary"
         }
       >
-        Get your free score
+        Get started free
       </Link>
       <Link
         href="/sign-in"

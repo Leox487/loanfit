@@ -4,10 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const BUSINESS_TYPES = [
-  "Sole Proprietor",
   "LLC",
-  "S-Corp",
-  "C-Corp",
+  "Sole Proprietor",
+  "Corporation",
   "Partnership",
 ] as const;
 
@@ -92,7 +91,7 @@ export function OnboardingForm() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/upload");
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
@@ -189,7 +188,7 @@ export function OnboardingForm() {
         className="btn btn-primary onboarding-submit"
         disabled={submitting}
       >
-        {submitting ? "Saving…" : "Continue to dashboard"}
+        {submitting ? "Saving…" : "Continue to upload"}
       </button>
     </form>
   );

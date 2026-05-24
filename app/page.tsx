@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 import { FeatureAccordion } from "@/app/components/FeatureAccordion";
 import { LandingActions } from "@/app/components/LandingActions";
@@ -11,7 +12,7 @@ import {
 
 export default async function Home() {
   const { userId } = await auth();
-  const isSignedIn = Boolean(userId);
+  if (userId) redirect("/dashboard");
 
   return (
     <main className="landing-page">
@@ -29,7 +30,7 @@ export default async function Home() {
               underwriter does — and gives you a score, red flags, and an exact
               action plan to get approved.
             </p>
-            <LandingActions isSignedIn={isSignedIn} variant="hero" />
+            <LandingActions isSignedIn={false} variant="hero" />
             <p className="landing-hero-note">
               No credit check. No commitment. Results in under 2 minutes.
             </p>
@@ -160,7 +161,7 @@ export default async function Home() {
             Upload one document and get your loan readiness score in under 2
             minutes. No credit check. No commitment. No fluff.
           </p>
-          <LandingActions isSignedIn={isSignedIn} variant="cta" />
+          <LandingActions isSignedIn={false} variant="cta" />
           <p className="landing-cta-note">
             Powered by Claude AI. Your documents are never stored after analysis.
           </p>
