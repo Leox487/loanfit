@@ -193,7 +193,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (e) {
-    console.error("Supabase insert error:", e);
+    console.error(e);
     return NextResponse.json(
       { error: "Failed to save analysis" },
       { status: 500 },

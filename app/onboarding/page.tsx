@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
     redirect("/sign-in");
   }
 
-  if (business) redirect("/upload");
+  if (business) redirect("/dashboard");
 
   return (
     <main className="onboarding-page">

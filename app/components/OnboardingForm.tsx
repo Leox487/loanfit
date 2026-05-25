@@ -91,7 +91,7 @@ export function OnboardingForm() {
         return;
       }
 
-      router.push("/upload");
+      router.push("/dashboard");
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
@@ -188,7 +188,7 @@ export function OnboardingForm() {
         className="btn btn-primary onboarding-submit"
         disabled={submitting}
       >
-        {submitting ? "Saving…" : "Continue to upload"}
+        {submitting ? "Saving…" : "Continue to dashboard"}
       </button>
     </form>
   );
