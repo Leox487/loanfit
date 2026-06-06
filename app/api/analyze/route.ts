@@ -141,8 +141,12 @@ export async function POST(req: Request) {
       system: getLoanAnalysisSystemPrompt(),
       messages: [{ role: "user", content }],
     });
-  } catch (e) {
-    console.error(e);
+  } catch (e: unknown) {
+    const err = e as { status?: number; message?: string; error?: unknown };
+    console.error(
+      "Claude API error:",
+      JSON.stringify({ status: err.status, message: err.message, error: err.error }),
+    );
     return NextResponse.json(
       { error: "Analysis request failed. Try again later." },
       { status: 502 },
