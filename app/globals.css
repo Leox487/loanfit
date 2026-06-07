@@ -1083,6 +1083,13 @@ body {
   line-height: 1.45;
 }
 
+.results-breakdown-footnote {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
 .results-dscr-statement {
   border: 1px solid var(--border);
   border-radius: 8px;

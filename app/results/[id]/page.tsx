@@ -87,6 +87,31 @@ function formatPoints(points: number): string {
   return String(points);
 }
 
+const MESSY_LABEL_RE = /\b(wait|revised|corrected|however|note)\b/i;
+
+function cleanComponentLabel(
+  name: string,
+  points: number,
+  label: string,
+): string {
+  if (!label || MESSY_LABEL_RE.test(label)) {
+    return `${name}: ${formatPoints(points)} points awarded based on analysis`;
+  }
+  return label;
+}
+
+function truncateReason(reason: string): string {
+  if (reason.length > 200) return `${reason.slice(0, 200)}...`;
+  return reason;
+}
+
+const TOTAL_TONE_COLOR: Record<Tone, string> = {
+  good: "#16a34a",
+  warn: "#ca8a04",
+  bad: "#dc2626",
+  neutral: "#6b7280",
+};
+
 function parseRedFlag(flag: string): {
   type: string;
   finding: string;
@@ -153,6 +178,7 @@ function BreakdownRow({
   label: string;
   variant?: "component" | "deduction" | "total";
 }) {
+  const isTotal = variant === "total";
   const pointsClass =
     variant === "deduction"
       ? "results-breakdown-points-negative"
@@ -166,9 +192,22 @@ function BreakdownRow({
     <div
       className={`results-breakdown-row results-breakdown-row-${variant}`}
     >
-      <span className="results-breakdown-name">{name}</span>
-      <span className={`results-breakdown-points ${pointsClass}`}>
-        {variant === "total" ? `= ${points}` : formatPoints(points)}
+      <span className="results-breakdown-name">
+        {variant === "deduction" ? <strong>{name}</strong> : name}
+      </span>
+      <span
+        className={`results-breakdown-points${isTotal ? "" : ` ${pointsClass}`}`}
+        style={
+          isTotal
+            ? {
+                color: TOTAL_TONE_COLOR[toneForScore(points)],
+                fontWeight: 800,
+                fontSize: "1.75rem",
+              }
+            : undefined
+        }
+      >
+        {isTotal ? `= ${points}` : formatPoints(points)}
       </span>
       <span className="results-breakdown-label">{label}</span>
     </div>
@@ -189,39 +228,63 @@ function ScoreBreakdownSection({ breakdown }: { breakdown: ScoreBreakdown }) {
         <BreakdownRow
           name="DSCR"
           points={breakdown.dscr_points}
-          label={breakdown.dscr_points_label}
+          label={cleanComponentLabel(
+            "DSCR",
+            breakdown.dscr_points,
+            breakdown.dscr_points_label,
+          )}
         />
         <BreakdownRow
           name="Revenue trend"
           points={breakdown.revenue_points}
-          label={breakdown.revenue_points_label}
+          label={cleanComponentLabel(
+            "Revenue trend",
+            breakdown.revenue_points,
+            breakdown.revenue_points_label,
+          )}
         />
         <BreakdownRow
           name="Cash flow"
           points={breakdown.cash_flow_points}
-          label={breakdown.cash_flow_points_label}
+          label={cleanComponentLabel(
+            "Cash flow",
+            breakdown.cash_flow_points,
+            breakdown.cash_flow_points_label,
+          )}
         />
         <BreakdownRow
           name="Debt load"
           points={breakdown.debt_load_points}
-          label={breakdown.debt_load_points_label}
+          label={cleanComponentLabel(
+            "Debt load",
+            breakdown.debt_load_points,
+            breakdown.debt_load_points_label,
+          )}
         />
         <BreakdownRow
           name="Document quality"
           points={breakdown.document_quality_points}
-          label={breakdown.document_quality_points_label}
+          label={cleanComponentLabel(
+            "Document quality",
+            breakdown.document_quality_points,
+            breakdown.document_quality_points_label,
+          )}
         />
         <BreakdownRow
           name="Business history"
           points={breakdown.business_history_points}
-          label={breakdown.business_history_points_label}
+          label={cleanComponentLabel(
+            "Business history",
+            breakdown.business_history_points,
+            breakdown.business_history_points_label,
+          )}
         />
         {breakdown.red_flag_deductions.map((deduction, i) => (
           <BreakdownRow
             key={`${deduction.flag_name}-${i}`}
             name={deduction.flag_name}
             points={deduction.points}
-            label={deduction.reason}
+            label={truncateReason(deduction.reason)}
             variant="deduction"
           />
         ))}
@@ -232,6 +295,9 @@ function ScoreBreakdownSection({ breakdown }: { breakdown: ScoreBreakdown }) {
           variant="total"
         />
       </div>
+      <p className="results-breakdown-footnote">
+        Score calculated using SBA SOP 50 10 8 underwriting criteria
+      </p>
     </section>
   );
 }
