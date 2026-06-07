@@ -204,6 +204,7 @@ body {
 /* Hero */
 .landing-hero {
   background: #ffffff;
+  padding-top: 40px;
 }
 
 .landing-hero-inner {
@@ -226,11 +227,11 @@ body {
 }
 
 .landing-hero-sub {
-  margin: 0;
-  max-width: 520px;
-  font-size: 18px;
+  font-size: 20px;
+  color: #6b7280;
   line-height: 1.6;
-  color: var(--landing-body);
+  max-width: 620px;
+  margin: 16px auto 32px auto;
 }
 
 .landing-hero-note {

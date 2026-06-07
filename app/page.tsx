@@ -20,15 +20,16 @@ export default async function Home() {
       <section className="landing-section landing-hero">
         <div className="landing-section-inner landing-hero-inner">
           <div className="landing-hero-copy">
-            <p className="landing-eyebrow">AI-Powered Loan Readiness</p>
+            <p className="landing-eyebrow">
+              Used by small business owners preparing for SBA loan applications
+            </p>
             <h1 className="landing-hero-headline">
               Know if your business is loan-ready — before you apply
             </h1>
             <p className="landing-hero-sub">
-              Most small business owners get rejected because they walked in
-              unprepared. LoanFit analyzes your financials the same way an SBA
-              underwriter does — and gives you a score, red flags, and an exact
-              action plan to get approved.
+              Upload your bank statement, P&amp;L, or tax return and get an
+              SBA-style loan readiness score with exact calculations, red flags,
+              and a prioritized fix list in under 2 minutes.
             </p>
             <LandingActions isSignedIn={false} variant="hero" />
             <p className="landing-hero-note">
