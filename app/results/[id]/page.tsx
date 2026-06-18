@@ -101,8 +101,11 @@ function cleanComponentLabel(
 }
 
 function truncateReason(reason: string): string {
-  if (reason.length > 200) return `${reason.slice(0, 200)}...`;
-  return reason;
+  if (reason.length <= 200) return reason;
+  const slice = reason.slice(0, 200);
+  const lastSpace = slice.lastIndexOf(" ");
+  const truncated = lastSpace > 0 ? slice.slice(0, lastSpace) : slice;
+  return `${truncated.trimEnd()}...`;
 }
 
 const TOTAL_TONE_COLOR: Record<Tone, string> = {
