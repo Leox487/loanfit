@@ -11,6 +11,7 @@ import {
   type ScoreBreakdown,
   normalizeLoanAnalysis,
 } from "@/lib/analysis-types";
+import { ResultsSection } from "@/app/components/ResultsSection";
 import { WhatIfSimulator } from "@/app/components/WhatIfSimulator";
 import { getAnalysisById } from "@/lib/db";
 
@@ -452,117 +453,142 @@ export default async function ResultsPage({
           <p className="results-summary">{analysis.summary}</p>
         </section>
 
-        {/* Section 3 — Score Breakdown */}
-        <ScoreBreakdownSection breakdown={analysis.score_breakdown} />
+        {/* Group 2 — The Numbers */}
+        <ResultsSection
+          title="The Numbers"
+          subtitle="Exactly how we calculated your score"
+        >
+          <ScoreBreakdownSection breakdown={analysis.score_breakdown} />
 
-        {/* Section 4 — DSCR Deep Dive */}
-        <DscrDeepDive dscr={analysis.dscr} calc={analysis.dscr_calculation} />
+          <DscrDeepDive dscr={analysis.dscr} calc={analysis.dscr_calculation} />
 
-        {/* Section 5 — Metrics */}
-        <section className="results-section">
-          <h2 className="results-heading">Metrics</h2>
-          <div className="metric-grid">
-            <Pill
-              label="DSCR"
-              value={formatDscr(analysis.dscr)}
-              tone={toneForDscr(analysis.dscr)}
-            />
-            <Pill
-              label="Revenue trend"
-              value={analysis.revenue_trend}
-              tone={toneForRevenue(analysis.revenue_trend)}
-            />
-            <Pill
-              label="Debt load"
-              value={analysis.debt_load}
-              tone={toneForDebt(analysis.debt_load)}
-            />
-            <Pill
-              label="Cash flow"
-              value={analysis.cash_flow_consistency}
-              tone={toneForCash(analysis.cash_flow_consistency)}
-            />
-          </div>
-        </section>
+          <section className="results-section">
+            <h2 className="results-heading">Metrics</h2>
+            <div className="metric-grid">
+              <Pill
+                label="DSCR"
+                value={formatDscr(analysis.dscr)}
+                tone={toneForDscr(analysis.dscr)}
+              />
+              <Pill
+                label="Revenue trend"
+                value={analysis.revenue_trend}
+                tone={toneForRevenue(analysis.revenue_trend)}
+              />
+              <Pill
+                label="Debt load"
+                value={analysis.debt_load}
+                tone={toneForDebt(analysis.debt_load)}
+              />
+              <Pill
+                label="Cash flow"
+                value={analysis.cash_flow_consistency}
+                tone={toneForCash(analysis.cash_flow_consistency)}
+              />
+            </div>
+          </section>
+        </ResultsSection>
 
-        {/* Section 6 — Red Flags */}
-        <section className="results-section">
-          <h2 className="results-heading">Red flags</h2>
-          {analysis.red_flags.length === 0 ? (
-            <p className="results-muted">None noted for this document.</p>
-          ) : (
-            <ul className="results-flag-list">
-              {analysis.red_flags.map((f, i) => {
-                const parsed = parseRedFlag(f);
-                return (
-                  <li key={`${i}-${f}`} className="results-flag-item">
-                    <p className="results-flag-title">
-                      <strong>{parsed.type}:</strong> {parsed.finding}
-                    </p>
-                    {parsed.reference ? (
-                      <p className="results-flag-reference">{parsed.reference}</p>
-                    ) : null}
+        {/* Group 3 — What's Holding You Back */}
+        <ResultsSection
+          title="What's Holding You Back"
+          subtitle="Issues an SBA underwriter would flag"
+        >
+          <section className="results-section">
+            <h2 className="results-heading">Red flags</h2>
+            {analysis.red_flags.length === 0 ? (
+              <p className="results-muted">None noted for this document.</p>
+            ) : (
+              <ul className="results-flag-list">
+                {analysis.red_flags.map((f, i) => {
+                  const parsed = parseRedFlag(f);
+                  return (
+                    <li key={`${i}-${f}`} className="results-flag-item">
+                      <p className="results-flag-title">
+                        <strong>{parsed.type}:</strong> {parsed.finding}
+                      </p>
+                      {parsed.reference ? (
+                        <p className="results-flag-reference">
+                          {parsed.reference}
+                        </p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        </ResultsSection>
+
+        {/* Group 4 — Your Action Plan */}
+        <ResultsSection
+          title="Your Action Plan"
+          subtitle="Fix these to improve your score"
+        >
+          <section className="results-section">
+            <h2 className="results-heading">Prioritized fixes</h2>
+            {analysis.fix_list.length === 0 ? (
+              <p className="results-muted">No fix items returned.</p>
+            ) : (
+              <ol className="fix-list">
+                {analysis.fix_list.map((item, i) => {
+                  const priorityTone = toneForPriority(item.priority);
+                  return (
+                    <li key={`${item.action}-${i}`} className="fix-item">
+                      <span
+                        className={`fix-priority-badge fix-priority-badge-${priorityTone}`}
+                      >
+                        {formatPriorityLabel(item.priority)}
+                      </span>
+                      <p className="fix-action">{item.action}</p>
+                      <p className="fix-impact">{item.impact}</p>
+                      <p className="results-fix-timeline">
+                        Timeline: {item.timeline}
+                      </p>
+                      <p className="results-fix-sba-ref">{item.sba_reference}</p>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </section>
+        </ResultsSection>
+
+        {/* Group 5 — Loan Options */}
+        <ResultsSection
+          title="Loan Options"
+          subtitle="What you may qualify for"
+        >
+          <section className="results-section">
+            <h2 className="results-heading">Loan types you may qualify for</h2>
+            {analysis.loan_types_qualified.length === 0 ? (
+              <p className="results-muted">
+                None listed — strengthen fundamentals first.
+              </p>
+            ) : (
+              <ul className="loan-chip-list">
+                {analysis.loan_types_qualified.map((t, i) => (
+                  <li key={`${i}-${t}`} className="loan-chip">
+                    {t}
                   </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+                ))}
+              </ul>
+            )}
+          </section>
+        </ResultsSection>
 
-        {/* Section 7 — Prioritized Fix List */}
-        <section className="results-section">
-          <h2 className="results-heading">Prioritized fixes</h2>
-          {analysis.fix_list.length === 0 ? (
-            <p className="results-muted">No fix items returned.</p>
-          ) : (
-            <ol className="fix-list">
-              {analysis.fix_list.map((item, i) => {
-                const priorityTone = toneForPriority(item.priority);
-                return (
-                  <li key={`${item.action}-${i}`} className="fix-item">
-                    <span
-                      className={`fix-priority-badge fix-priority-badge-${priorityTone}`}
-                    >
-                      {formatPriorityLabel(item.priority)}
-                    </span>
-                    <p className="fix-action">{item.action}</p>
-                    <p className="fix-impact">{item.impact}</p>
-                    <p className="results-fix-timeline">
-                      Timeline: {item.timeline}
-                    </p>
-                    <p className="results-fix-sba-ref">{item.sba_reference}</p>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </section>
-
-        {/* Section 8 — Loan Types */}
-        <section className="results-section">
-          <h2 className="results-heading">Loan types you may qualify for</h2>
-          {analysis.loan_types_qualified.length === 0 ? (
-            <p className="results-muted">
-              None listed — strengthen fundamentals first.
-            </p>
-          ) : (
-            <ul className="loan-chip-list">
-              {analysis.loan_types_qualified.map((t, i) => (
-                <li key={`${i}-${t}`} className="loan-chip">
-                  {t}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        {/* Section 9 — What If Simulator */}
-        <WhatIfSimulator
-          baseScore={analysis.loan_readiness_score}
-          baseDscr={analysis.dscr}
-          baseDebtLoad={analysis.debt_load}
-          baseRevenueTrend={analysis.revenue_trend}
-        />
+        {/* Group 6 — Try Different Scenarios */}
+        <ResultsSection
+          title="Try Different Scenarios"
+          subtitle="See how changes could move your score"
+        >
+          <WhatIfSimulator
+            baseScore={analysis.loan_readiness_score}
+            baseDscr={analysis.dscr}
+            baseDebtLoad={analysis.debt_load}
+            baseRevenueTrend={analysis.revenue_trend}
+          />
+        </ResultsSection>
 
         <div className="results-actions">
           <Link href="/upload" className="btn btn-primary">
