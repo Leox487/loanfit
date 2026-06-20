@@ -485,6 +485,11 @@ export default async function ResultsPage({
         <ResultsSection
           title="The Numbers"
           subtitle="Exactly how we calculated your score"
+          action={
+            <Link href={`/results/${id}/calculation`} className="calc-detail-link">
+              See full calculation →
+            </Link>
+          }
         >
           <ScoreBreakdownSection breakdown={analysis.score_breakdown} />
 

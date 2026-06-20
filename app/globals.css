@@ -1673,12 +1673,26 @@ body {
   gap: 1rem;
   width: 100%;
   margin: 0 0 20px;
+}
+
+.results-group-toggle {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 1;
+  width: 100%;
+  margin: 0;
   padding: 0;
   background: none;
   border: none;
   text-align: left;
   cursor: pointer;
   appearance: none;
+}
+
+.results-group-action {
+  flex-shrink: 0;
 }
 
 .results-group-heading-text {
@@ -1758,4 +1772,101 @@ body {
 .priority-action-timeline {
   font-size: 13px;
   color: #6b7280;
+}
+
+.calc-back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #6b7280;
+  text-decoration: none;
+}
+.calc-back-link:hover {
+  color: #1a2332;
+}
+.calc-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a2332;
+  margin-bottom: 24px;
+}
+.calc-subheading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a2332;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+.calc-row {
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+.calc-row-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a2332;
+  margin-right: 12px;
+}
+.calc-row-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a2332;
+}
+.calc-positive {
+  color: #15803d;
+}
+.calc-negative {
+  color: #b91c1c;
+}
+.calc-row-explain {
+  font-size: 13px;
+  color: #4b5563;
+  margin-top: 4px;
+  line-height: 1.6;
+}
+.calc-row-rule {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+  font-style: italic;
+}
+.calc-final-row {
+  border-bottom: none;
+  border-top: 2px solid #1a2332;
+  padding-top: 16px;
+}
+.calc-final-value {
+  font-size: 20px;
+}
+.calc-highlight-row {
+  background: #f8f9fa;
+  padding: 14px;
+  border-radius: 8px;
+  border-bottom: none;
+  margin: 8px 0;
+}
+.calc-formula-box {
+  background: #1a2332;
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  text-align: center;
+}
+.calc-formula-text {
+  font-size: 15px;
+  font-weight: 700;
+}
+.calc-full-text {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.calc-detail-link {
+  font-size: 13px;
+  color: #2563eb;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.calc-detail-link:hover {
+  text-decoration: underline;
 }
