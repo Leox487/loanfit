@@ -610,6 +610,42 @@ export default async function ResultsPage({
           </section>
         </ResultsSection>
 
+        <section className="results-group">
+          <div className="results-group-header">
+            <div>
+              <h2 className="results-group-title">Sources &amp; References</h2>
+              <p className="results-group-subtitle">Where this analysis methodology comes from</p>
+            </div>
+          </div>
+          <ul className="sources-list">
+            <li className="sources-item">
+              <a href="https://www.sba.gov/document/sop-50-10-lender-development-company-loan-programs" target="_blank" rel="noopener noreferrer" className="sources-link">
+                SBA SOP 50 10 7 — Lender and Development Company Loan Programs ↗
+              </a>
+            </li>
+            <li className="sources-item">
+              <a href="https://www.sba.gov/funding-programs/loans/7a-loans" target="_blank" rel="noopener noreferrer" className="sources-link">
+                SBA 7(a) Loan Program Overview ↗
+              </a>
+            </li>
+            <li className="sources-item">
+              <a href="https://www.sba.gov/funding-programs/loans/7a-loans/types-of-7a-loans" target="_blank" rel="noopener noreferrer" className="sources-link">
+                SBA Loan Eligibility Requirements ↗
+              </a>
+            </li>
+            <li className="sources-item">
+              <a href="https://www.sba.gov/local-assistance" target="_blank" rel="noopener noreferrer" className="sources-link">
+                Find a Small Business Development Center (SBDC) ↗
+              </a>
+            </li>
+            <li className="sources-item">
+              <a href="https://www.score.org" target="_blank" rel="noopener noreferrer" className="sources-link">
+                SCORE — Free Business Mentoring ↗
+              </a>
+            </li>
+          </ul>
+        </section>
+
         {/* Group 6 — Try Different Scenarios */}
         <ResultsSection
           title="Try Different Scenarios"

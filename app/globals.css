@@ -1870,3 +1870,21 @@ body {
 .calc-detail-link:hover {
   text-decoration: underline;
 }
+
+.sources-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sources-item {
+  padding: 4px 0;
+}
+.sources-link {
+  font-size: 14px;
+  color: #2563eb;
+  text-decoration: none;
+}
+.sources-link:hover {
+  text-decoration: underline;
+}
