@@ -6,6 +6,7 @@ import {
   type CashFlowConsistency,
   type DebtLoad,
   type DocumentAssessment,
+  type FixItem,
   type LoanAnalysis,
   type RevenueTrend,
   type ScoreBreakdown,
@@ -385,6 +386,12 @@ function DscrDeepDive({
   );
 }
 
+function getPriorityActions(fixList: FixItem[]): FixItem[] {
+  const high = fixList.filter((f) => String(f.priority).toLowerCase() === "high");
+  const medium = fixList.filter((f) => String(f.priority).toLowerCase() === "medium");
+  return [...high, ...medium].slice(0, 3);
+}
+
 export default async function ResultsPage({
   params,
 }: {
@@ -451,6 +458,27 @@ export default async function ResultsPage({
             {analysis.loan_readiness_score}
           </div>
           <p className="results-summary">{analysis.summary}</p>
+        </section>
+
+        <section className="results-group">
+          <div className="results-group-header">
+            <div>
+              <h2 className="results-group-title">Do These 3 Things First</h2>
+              <p className="results-group-subtitle">These will move your score the most</p>
+            </div>
+          </div>
+          <div className="priority-actions-list">
+            {getPriorityActions(analysis.fix_list).map((item, i) => (
+              <div key={`priority-${i}`} className="priority-action-card">
+                <div className="priority-action-badge">{i + 1}</div>
+                <div className="priority-action-content">
+                  <p className="priority-action-text">{item.action}</p>
+                  <p className="priority-action-impact">{item.impact}</p>
+                  <p className="priority-action-timeline">Timeline: {item.timeline || "Not specified"}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Group 2 — The Numbers */}

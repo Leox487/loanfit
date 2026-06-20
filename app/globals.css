@@ -1712,3 +1712,50 @@ body {
 .results-group-chevron-open {
   transform: rotate(180deg);
 }
+
+.priority-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.priority-action-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  border-left: 4px solid #15803d;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.priority-action-badge {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #15803d;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+.priority-action-content {
+  flex: 1;
+}
+.priority-action-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a2332;
+  margin-bottom: 6px;
+}
+.priority-action-impact {
+  font-size: 14px;
+  color: #15803d;
+  margin-bottom: 6px;
+}
+.priority-action-timeline {
+  font-size: 13px;
+  color: #6b7280;
+}
